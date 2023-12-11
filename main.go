@@ -1,21 +1,33 @@
 package main
 
 import (
+	"P1_API/config"
+	"P1_API/controller"
 	"P1_API/helper"
+	"P1_API/repository"
+	"P1_API/router"
+	"P1_API/service"
 	"fmt"
 	"net/http"
-
-	"github.com/julienschmidt/httprouter"
 )
 
 func main() {
 	fmt.Printf("Start Server")
 
-	routes := httprouter.New()
+	// database
+	db := config.DatabaseConnection()
 
-	routes.GET("/",func (w http.ResponseWriter, r *http.Request, p httprouter.Params)  {
-		fmt.Fprint(w, "Welcome Home")
-	})
+	// repository
+	bookRepository := repository.NewBookRepository(db)
+
+	// service
+	bookService := service.NewBookServiceImpl(bookRepository)
+
+	// controller
+	bookController := controller.NewBookController(bookService)
+
+	// router
+	routes := router.NewRouter(bookController)
 
 	server := http.Server{Addr: "localhost:8888", Handler: routes}
 
